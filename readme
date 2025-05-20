@@ -1,0 +1,268 @@
+
+📌 Proyecto: Ticket Flow
+Sistema completo de gestión de tickets, que incluye autenticación, sockets, panel de administración y visualización de datos.
+
+🧱 Estructura del Proyecto
+graphql
+Copiar
+Editar
+ticket-flow/
+├── backend/       # Backend con NestJS y TypeORM
+└── frontend/      # Frontend con React y Vite
+🛠️ Tecnologías Utilizadas
+Backend (ticket-flow-backend)
+Framework: NestJS
+
+ORM: TypeORM
+
+Base de datos: MySQL
+
+Seguridad: JWT + Passport
+
+Websockets: Socket.IO
+
+Documentación API: Swagger
+
+Validación: class-validator + class-transformer
+
+Estilo de código: ESLint + Prettier
+
+Tests: Jest
+
+Frontend (ticket-flow)
+Framework: React 18
+
+Empaquetador: Vite
+
+Estilos: Tailwind CSS
+
+Gráficos: Chart.js + React Chart.js 2
+
+Autenticación: JWT
+
+Formulario: react-hook-form
+
+Sockets: socket.io-client
+
+UX/UI: Lucide, react-hot-toast
+
+🚀 Scripts de Ejecución
+Backend
+bash
+Copiar
+Editar
+# Desarrollo
+npm run start:dev
+
+# Producción
+npm run start:prod
+
+# Build
+npm run build
+
+# Tests
+npm run test         # Unitarios
+npm run test:e2e     # End-to-End
+npm run test:cov     # Cobertura
+
+# Linter y formato
+npm run lint
+npm run format
+Frontend
+bash
+Copiar
+Editar
+# Desarrollo
+npm run dev
+
+# Build
+npm run build
+
+# Vista previa de build
+npm run preview
+
+# Iniciar frontend y backend a la vez
+npm start
+🧪 Testing
+El backend usa Jest para pruebas unitarias y e2e.
+
+Cobertura de código generada en coverage/.
+
+🔐 Seguridad
+Autenticación mediante JWT.
+
+Estrategias de Passport: local y jwt.
+
+📊 Dashboard y Visualización
+Uso de Chart.js para representar métricas del sistema.
+
+Formateo de fechas con date-fns.
+
+Manejo de notificaciones con react-hot-toast.
+
+📡 Comunicación en Tiempo Real
+Sockets integrados tanto en frontend como backend mediante Socket.IO para notificaciones y actualizaciones en vivo.
+
+📝 Documentación API
+Accesible desde:
+
+bash
+Copiar
+Editar
+http://localhost:<puerto>/api-docs
+(Generada con @nestjs/swagger)
+
+🧩 Notas Adicionales
+Uso de estrategias de nombres personalizadas en TypeORM para consistencia con las bases de datos.
+
+Separación clara entre ambientes de desarrollo, testing y producción.
+
+Scripts automatizados para mantener el estilo de código limpio.
+
+
+Aquí tienes una **documentación profesional** del esquema SQL que has definido, ideal para compartir en un README técnico, un archivo de diseño (`database.md`) o incluir en una wiki del equipo:
+
+---
+
+# 🗂️ Diseño de Base de Datos — Ticket Flow (MySQL)
+
+## 🧾 Descripción General
+
+Este esquema representa el diseño inicial de la base de datos para el sistema **Ticket Flow**, adaptado para entornos MySQL. Proporciona soporte completo para gestión de tickets, usuarios, comentarios, notificaciones y archivos adjuntos.
+
+---
+
+## 📦 Tablas Principales
+
+### 1. `usuarios`
+
+Almacena la información de los usuarios del sistema.
+
+| Campo           | Tipo                 | Descripción                                            |
+| --------------- | -------------------- | ------------------------------------------------------ |
+| id              | `INT AUTO_INCREMENT` | Clave primaria                                         |
+| uuid            | `VARCHAR(36)`        | UUID único generado automáticamente                    |
+| nombre          | `VARCHAR(100)`       | Nombre completo                                        |
+| email           | `VARCHAR(255)`       | Correo único                                           |
+| password        | `TEXT`               | Hash de contraseña                                     |
+| rol             | `ENUM`               | Rol del usuario (`administrador`, `agente`, `cliente`) |
+| activo          | `BOOLEAN`            | Estado activo/inactivo                                 |
+| creado\_en      | `TIMESTAMP`          | Fecha de creación                                      |
+| actualizado\_en | `TIMESTAMP`          | Última actualización                                   |
+
+---
+
+### 2. `tickets`
+
+Registra los tickets de soporte generados por los clientes.
+
+| Campo          | Tipo          | Descripción                                                        |
+| -------------- | ------------- | ------------------------------------------------------------------ |
+| numero\_ticket | `VARCHAR(20)` | Identificador legible generado automáticamente                     |
+| estado         | `ENUM`        | Estado del ticket: `abierto`, `en_progreso`, `resuelto`, `cerrado` |
+| prioridad      | `ENUM`        | `Alta`, `Media`, `Baja`                                            |
+| cliente\_id    | `INT`         | FK a `usuarios(id)`                                                |
+| asignado\_id   | `INT`         | FK a `usuarios(id)` (puede ser NULL)                               |
+
+---
+
+### 3. `comentarios`
+
+Comentarios registrados en los tickets.
+
+| Campo       | Tipo      | Descripción                        |
+| ----------- | --------- | ---------------------------------- |
+| es\_interno | `BOOLEAN` | Indica si el comentario es interno |
+| ticket\_id  | `INT`     | FK a `tickets(id)`                 |
+| usuario\_id | `INT`     | FK a `usuarios(id)`                |
+
+---
+
+### 4. `notificaciones`
+
+Almacena mensajes de notificación asociados a los usuarios.
+
+| Campo | Tipo          | Descripción                    |
+| ----- | ------------- | ------------------------------ |
+| tipo  | `VARCHAR(50)` | Tipo de notificación           |
+| leida | `BOOLEAN`     | Estado de lectura (true/false) |
+
+---
+
+### 5. `archivos_adjuntos`
+
+Adjuntos vinculados a los tickets.
+
+| Campo           | Tipo           | Descripción                 |
+| --------------- | -------------- | --------------------------- |
+| nombre\_archivo | `VARCHAR(255)` | Nombre del archivo          |
+| url\_archivo    | `TEXT`         | URL o path del archivo      |
+| tipo\_archivo   | `VARCHAR(100)` | MIME type (opcional)        |
+| tamaño\_bytes   | `BIGINT`       | Tamaño del archivo en bytes |
+
+---
+
+## ⚙️ Funcionalidades Especiales
+
+### 🔁 Generación Automática de Números de Ticket
+
+* Se utiliza un **procedimiento almacenado (`GenerateTicketNumber`)** para crear un identificador tipo `TK-YYYYMMDD-0001`.
+* Implementado mediante un **trigger `BEFORE INSERT`** en la tabla `tickets`.
+
+---
+
+### 🚀 Triggers y Stored Procedures
+
+| Nombre                            | Tipo      | Propósito                                                       |
+| --------------------------------- | --------- | --------------------------------------------------------------- |
+| `GenerateTicketNumber`            | PROCEDURE | Genera números únicos por día para los tickets                  |
+| `set_ticket_number_before_insert` | TRIGGER   | Asigna automáticamente el número de ticket si no se proporciona |
+
+---
+
+## 🧩 Consideraciones para MySQL
+
+* Se usa `AUTO_INCREMENT` en lugar de UUID como clave primaria por rendimiento.
+* Políticas RLS (Row Level Security) no están presentes en MySQL.
+* Triggers y procedimientos adaptados con sintaxis específica para MySQL.
+* Compatibilidad con UTF8MB4 para soportar caracteres internacionales.
+
+---
+
+## 📈 Índices Agregados
+
+Mejoran el rendimiento en búsquedas frecuentes.
+
+```sql
+idx_tickets_cliente           --> tickets(cliente_id)
+idx_tickets_asignado          --> tickets(asignado_id)
+idx_tickets_estado            --> tickets(estado)
+idx_tickets_numero            --> tickets(numero_ticket)
+idx_comentarios_ticket        --> comentarios(ticket_id)
+idx_notificaciones_usuario    --> notificaciones(usuario_id)
+idx_archivos_ticket           --> archivos_adjuntos(ticket_id)
+```
+
+---
+
+## 🔐 Usuario por Defecto (opcional)
+
+Incluye una línea comentada para insertar un usuario administrador de forma manual.
+⚠️ **Importante:** Recuerda reemplazar el hash del password por uno seguro generado en tu entorno real.
+
+```sql
+-- CAMBIAR LA CONTRASEÑA EN PRODUCCIÓN
+-- INSERT INTO usuarios (...) VALUES ('Administrador', 'admin@sistema.com', '$2y$10$example_hash_aqui', 'administrador');
+```
+
+---
+
+## 📎 Recomendaciones
+
+* Agrega más validaciones a nivel de aplicación (NestJS) para mantener integridad.
+* Si planeas escalar o migrar a PostgreSQL en el futuro, considera usar UUID como PK en un entorno desacoplado.
+* Agrega control de versiones de esquema (ej: con TypeORM migrations o herramientas como Liquibase/Flyway).
+
+---
+
+¿Quieres que lo exporte como archivo `.md` o `.pdf`? ¿O necesitas que genere el diagrama entidad-relación (ERD) a partir de este esquema?
