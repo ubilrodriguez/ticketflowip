@@ -3,8 +3,8 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-// Definir la URL base de la API
-const API_URL = 'http://localhost:8000/api';
+// Definir la URL base de la API actualizada al puerto correcto
+const API_URL = 'http://localhost:3000/api';
 
 interface User {
   id: string;
@@ -80,33 +80,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth();
   }, [token]);
 
-  const login = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password
-      });
+//   const login = async (email: string, password: string) => {
+//     try {
+//       setLoading(true);
+
+// console.log('Detalles del error:', {
+//   status: error.response?.status,
+//   data: error.response?.data,
+//   message: error.message
+// });      
+//       const response = await axios.post(`${API_URL}/auth/login`, {
+//         email,
+//         password
+//       });
       
-      const { token, user } = response.data;
+//       console.log('Respuesta del servidor:', response.data);
       
-      localStorage.setItem('token', token);
-      setToken(token);
-      setUser(user);
-      setIsAuthenticated(true);
-      toast.success('¡Inicio de sesión exitoso!');
-    } catch (error: any) {
-      console.error('Error de inicio de sesión:', error);
-      toast.error(error.response?.data?.message || 'Error al iniciar sesión');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+//       const { token, user } = response.data;
+      
+//       localStorage.setItem('token', token);
+//       setToken(token);
+//       setUser(user);
+//       setIsAuthenticated(true);
+//       toast.success('¡Inicio de sesión exitoso!');
+//     } catch (error: any) {
+//       console.error('Error de inicio de sesión:', error);
+//       console.error('Detalles del error:', {
+//         status: error.response?.status,
+//         data: error.response?.data,
+//         message: error.message
+//       });
+//       toast.error(error.response?.data?.message || 'Error al iniciar sesión');
+//       throw error;
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+
+const login = async (email: string, password: string) => {
+  try {
+    setLoading(true);
+    
+    // Eliminado el console.log problemático
+    
+    const response = await axios.post(`${API_URL}/auth/login`, {
+      email,
+      password
+    });
+    
+    console.log('Respuesta del servidor:', response.data);
+    
+    const { token, user } = response.data;
+    
+    localStorage.setItem('token', token);
+    setToken(token);
+    setUser(user);
+    setIsAuthenticated(true);
+    toast.success('¡Inicio de sesión exitoso!');
+  } catch (error: any) {
+    console.error('Error de inicio de sesión:', error);
+    console.error('Detalles del error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    toast.error(error.response?.data?.message || 'Error al iniciar sesión');
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const register = async (nombre: string, email: string, password: string) => {
     try {
       setLoading(true);
+      console.log('Intentando registro con:', { nombre, email, url: `${API_URL}/auth/register` });
+      
       await axios.post(`${API_URL}/auth/register`, {
         nombre,
         email,
@@ -116,6 +166,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Registro exitoso. Por favor inicia sesión.');
     } catch (error: any) {
       console.error('Error de registro:', error);
+      console.error('Detalles del error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       toast.error(error.response?.data?.message || 'Error al registrarse');
       throw error;
     } finally {

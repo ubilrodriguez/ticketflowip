@@ -1,22 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Habilitar CORS
-  // Habilitar CORS con configuración específica
-app.enableCors({
-  origin: 'http://localhost:5173', // URL de su aplicación React/Vite
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-});
-  // Configurar prefijo global para la API
-  app.setGlobalPrefix('api');
-
-  // Configurar validación global
+  
+  // Habilitar CORS con configuración más permisiva
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+  
+  // Habilitar validación global
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -25,40 +23,16 @@ app.enableCors({
     }),
   );
 
-  // Configurar Swagger
-  const config = new DocumentBuilder()
-    .setTitle('TicketFlow API')
-    .setDescription('API para sistema de gestión de tickets de soporte')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  // Intentar con puertos aleatorios en un rango alto
-  const startPort = 8000;
-  const endPort = 9999;
+  // Obtener el puerto de la configuración
+  const configService = app.get(ConfigService);
   
-  let currentPort = startPort;
-  let success = false;
+  // Usar el puerto 3000 de forma consistente o el que se configure en variables de entorno
+  const port = configService.get('PORT', 3000);
   
-  while (currentPort <= endPort && !success) {
-    try {
-      await app.listen(currentPort);
-      console.log(`Aplicación iniciada exitosamente en puerto: ${currentPort}`);
-      success = true;
-    } catch (error) {
-      console.log(`Puerto ${currentPort} en uso, intentando con otro...`);
-      // Generamos un salto más grande para evitar rangos ocupados
-      currentPort += Math.floor(Math.random() * 100) + 50;
-    }
-  }
-
-  if (!success) {
-    console.error('No se pudo encontrar un puerto disponible entre 8000-9999');
-    process.exit(1);
-  }
-
+  await app.listen(port);
+  
+  console.log(`Aplicación iniciada exitosamente en puerto: ${port}`);
   console.log(`Aplicación iniciada en: ${await app.getUrl()}`);
 }
+
 bootstrap();

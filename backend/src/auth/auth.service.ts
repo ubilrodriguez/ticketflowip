@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { UsuariosService } from '../usuarios/usuarios.service';
+import * as bcrypt from 'bcrypt';
 import { CreateUsuarioDto } from '../usuarios/dto/create-usuario.dto';
 
 @Injectable()
@@ -11,75 +11,56 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  /**
-   * Valida las credenciales de un usuario
-   * @param email Email del usuario
-   * @param password Contraseña del usuario
-   * @returns El usuario autenticado sin la contraseña
-   */
   async validateUser(email: string, password: string): Promise<any> {
-    // Buscar al usuario por email
-    const usuario = await this.usuariosService.findByEmail(email);
+    try {
+      const usuario = await this.usuariosService.findOneByEmail(email);
+      
+      if (!usuario) {
+        throw new UnauthorizedException('Credenciales inválidas');
+      }
 
-    // Si el usuario existe y la contraseña coincide
-    if (usuario && await bcrypt.compare(password, usuario.password)) {
-      // Extraer la contraseña del objeto para no devolverla
-      const { password, ...result } = usuario;
+      if (!usuario.activo) {
+        throw new UnauthorizedException('Este usuario ha sido desactivado');
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, usuario.password);
+      
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Credenciales inválidas');
+      }
+
+      const { password: _, ...result } = usuario;
       return result;
+    } catch (error) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
-    
-    return null;
   }
 
-  /**
-   * Genera un token JWT para el usuario autenticado
-   * @param usuario Usuario autenticado
-   * @returns Token JWT y datos del usuario
-   */
-  async login(usuario: any) {
-    // Payload para el token JWT
+  async login(user: any) {
     const payload = { 
-      sub: usuario.id, 
-      email: usuario.email,
-      nombre: usuario.nombre,
-      rol: usuario.rol
+      sub: user.id, 
+      email: user.email,
+      rol: user.rol,
+      uuid: user.uuid
     };
-
-    // Retornar token y datos del usuario (sin contraseña)
+    
     return {
-      user: usuario,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email,
+        rol: user.rol,
+        uuid: user.uuid
+      },
       token: this.jwtService.sign(payload),
     };
   }
 
-  /**
-   * Registra un nuevo usuario en el sistema
-   * @param createUsuarioDto DTO con los datos del nuevo usuario
-   * @returns Usuario creado
-   */
   async register(createUsuarioDto: CreateUsuarioDto) {
-    // Verificar si el email ya está registrado
-    const existingUser = await this.usuariosService.findByEmail(createUsuarioDto.email);
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
-    }
-
-    // Por defecto, los nuevos registros son clientes
-    const nuevoUsuario = {
-      ...createUsuarioDto,
-      rol: 'cliente',
-    };
-
-    // Crear el usuario
-    return this.usuariosService.create(nuevoUsuario);
+    return this.usuariosService.create(createUsuarioDto);
   }
 
-  /**
-   * Obtiene el perfil del usuario autenticado
-   * @param userId ID del usuario autenticado
-   * @returns Datos del usuario sin la contraseña
-   */
-  async getProfile(userId: string) {
+  async getProfile(userId: number) {
     return this.usuariosService.findOne(userId);
   }
 }

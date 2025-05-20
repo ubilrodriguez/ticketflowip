@@ -1,53 +1,67 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 
-// Páginas
+// Componentes de layout
+import Header from './components/Header';
+
+import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Dashboard from './pages/Dashboard';
-import TicketList from './pages/tickets/TicketList';
-import TicketDetail from './pages/tickets/TicketDetail';
-import CreateTicket from './pages/tickets/CreateTicket';
-import AdminPanel from './pages/admin/AdminPanel';
-import UserManagement from './pages/admin/UserManagement';
-import NotFound from './pages/NotFound';
+import Unauthorized from './pages/Unauthorized';
 
-// Componentes
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import RoleRoute from './components/auth/RoleRoute';
-import Layout from './components/layout/Layout';
+// Componentes de páginas protegidas
+import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 
-function App() {
+// Importa otros componentes de páginas según sea necesario
+// import TicketList from './pages/tickets/TicketList';
+// import TicketForm from './pages/tickets/TicketForm';
+// import AdminDashboard from './pages/admin/Dashboard';
+
+const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Toaster position="top-right" />
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Rutas protegidas */}
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="tickets" element={<TicketList />} />
-            <Route path="tickets/new" element={<CreateTicket />} />
-            <Route path="tickets/:id" element={<TicketDetail />} />
-            
-            {/* Rutas de administrador */}
-            <Route path="admin" element={<RoleRoute roles={['administrador']}><AdminPanel /></RoleRoute>} />
-            <Route path="admin/users" element={<RoleRoute roles={['administrador']}><UserManagement /></RoleRoute>} />
-          </Route>
-          
-          {/* Ruta 404 */}
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <main>
+            <Routes>
+              {/* Rutas públicas */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              
+              {/* Rutas protegidas - requieren autenticación */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/profile" element={<Profile />} />
+                {/* <Route path="/tickets" element={<TicketList />} /> */}
+                {/* <Route path="/tickets/new" element={<TicketForm />} /> */}
+                {/* <Route path="/tickets/:id" element={<TicketDetail />} /> */}
+              </Route>
+              
+              {/* Rutas protegidas - requieren rol de administrador */}
+              <Route element={<ProtectedRoute requiredRoles={['administrador']} />}>
+                {/* <Route path="/admin" element={<AdminDashboard />} /> */}
+                {/* <Route path="/admin/users" element={<UserManagement />} /> */}
+              </Route>
+              
+              {/* Rutas protegidas - requieren rol de agente o administrador */}
+              <Route element={<ProtectedRoute requiredRoles={['administrador', 'agente']} />}>
+                {/* <Route path="/tickets/manage" element={<ManageTickets />} /> */}
+              </Route>
+              
+              {/* Ruta 404 - No encontrado */}
+              <Route path="*" element={<div className="text-center py-20">Página no encontrada</div>} />
+            </Routes>
+          </main>
+        </div>
+      </AuthProvider>
+    </Router>
   );
-}
+};
 
 export default App;

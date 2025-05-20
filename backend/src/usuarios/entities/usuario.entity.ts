@@ -1,41 +1,35 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export enum RolUsuario {
-  ADMINISTRADOR = 'administrador',
-  AGENTE = 'agente',
-  CLIENTE = 'cliente',
-}
-
-@Entity({ name: 'usuarios' })
+@Entity('usuarios')
 export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 36, unique: true, default: () => 'UUID()' })
+  @Column({ type: 'uuid', unique: true, generated: 'uuid' })
   uuid: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ length: 100 })
   nombre: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ unique: true })
   email: string;
 
-  @Column({ type: 'text' })
+  @Column()
   password: string;
 
-  @Column({
-    type: 'enum',
-    enum: RolUsuario,
-    default: RolUsuario.CLIENTE,
+  @Column({ 
+    type: 'enum', 
+    enum: ['administrador', 'agente', 'cliente'], 
+    default: 'cliente'
   })
-  rol: RolUsuario;
+  rol: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ default: true })
   activo: boolean;
 
-  @CreateDateColumn({ name: 'creado_en' })
-  creado_en: Date;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @UpdateDateColumn({ name: 'actualizado_en' })
-  actualizado_en: Date;
+  @UpdateDateColumn()
+  fechaActualizacion: Date;
 }

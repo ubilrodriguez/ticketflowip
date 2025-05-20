@@ -1,31 +1,22 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
-import { RolUsuario } from '../entities/usuario.entity';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
 
 export class CreateUsuarioDto {
+  @IsString()
   @IsNotEmpty({ message: 'El nombre es requerido' })
-  @IsString({ message: 'El nombre debe ser un texto' })
   nombre: string;
 
+  @IsEmail({}, { message: 'El email debe ser un correo válido' })
   @IsNotEmpty({ message: 'El email es requerido' })
-  @IsEmail({}, { message: 'El email debe tener un formato válido' })
   email: string;
 
-  @IsNotEmpty({ message: 'La contraseña es requerida' })
-  @IsString({ message: 'La contraseña debe ser un texto' })
+  @IsString()
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  @IsNotEmpty({ message: 'La contraseña es requerida' })
   password: string;
 
-  @IsOptional()
-  @IsString({ message: 'El teléfono debe ser un texto' })
-  telefono?: string;
-
-  @IsOptional()
-  @IsString({ message: 'La dirección debe ser un texto' })
-  direccion?: string;
-
-  @IsOptional()
-  @IsEnum(RolUsuario, { 
-    message: 'El rol debe ser uno de: administrador, agente, cliente' 
+  @IsEnum(['administrador', 'agente', 'cliente'], { 
+    message: 'El rol debe ser: administrador, agente o cliente' 
   })
+  @IsOptional()
   rol?: string;
 }

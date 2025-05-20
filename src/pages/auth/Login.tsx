@@ -1,9 +1,8 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Ticket } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'react-hot-toast';
 
 interface LoginFormData {
   email: string;
@@ -14,18 +13,22 @@ const Login: React.FC = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>();
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Obtener la URL de redirección si existe
+  const from = location.state?.from?.pathname || '/';
 
   // Redireccionar si ya está autenticado
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, from]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data.email, data.password);
-      navigate('/');
+      // La redirección se maneja en el useEffect
     } catch (error) {
       console.error('Error en inicio de sesión:', error);
     }
@@ -38,7 +41,7 @@ const Login: React.FC = () => {
           <Ticket className="h-12 w-12 text-blue-500" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Iniciar sesión en TicketFlow
+          Iniciar sesión
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           ¿No tienes una cuenta?{' '}
@@ -90,11 +93,7 @@ const Login: React.FC = () => {
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   {...register('password', {
-                    required: 'La contraseña es obligatoria',
-                    minLength: {
-                      value: 6,
-                      message: 'La contraseña debe tener al menos 6 caracteres'
-                    }
+                    required: 'La contraseña es obligatoria'
                   })}
                 />
                 {errors.password && (
@@ -117,9 +116,9 @@ const Login: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -141,64 +140,6 @@ const Login: React.FC = () => {
               </button>
             </div>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Credenciales de prueba
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-3">
-              <div
-                onClick={() => {
-                  toast.success('Credenciales de administrador aplicadas');
-                  const emailInput = document.getElementById('email') as HTMLInputElement;
-                  const passwordInput = document.getElementById('password') as HTMLInputElement;
-                  if (emailInput && passwordInput) {
-                    emailInput.value = 'admin@ejemplo.com';
-                    passwordInput.value = 'password';
-                  }
-                }}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 cursor-pointer"
-              >
-                Administrador
-              </div>
-              <div
-                onClick={() => {
-                  toast.success('Credenciales de agente aplicadas');
-                  const emailInput = document.getElementById('email') as HTMLInputElement;
-                  const passwordInput = document.getElementById('password') as HTMLInputElement;
-                  if (emailInput && passwordInput) {
-                    emailInput.value = 'agente@ejemplo.com';
-                    passwordInput.value = 'password';
-                  }
-                }}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 cursor-pointer"
-              >
-                Agente
-              </div>
-              <div
-                onClick={() => {
-                  toast.success('Credenciales de cliente aplicadas');
-                  const emailInput = document.getElementById('email') as HTMLInputElement;
-                  const passwordInput = document.getElementById('password') as HTMLInputElement;
-                  if (emailInput && passwordInput) {
-                    emailInput.value = 'cliente@ejemplo.com';
-                    passwordInput.value = 'password';
-                  }
-                }}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 cursor-pointer"
-              >
-                Cliente
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
