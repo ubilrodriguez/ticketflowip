@@ -256,13 +256,3 @@ Incluye una línea comentada para insertar un usuario administrador de forma man
 ```
 
 ---
-
-## 📎 Recomendaciones
-
-* Agrega más validaciones a nivel de aplicación (NestJS) para mantener integridad.
-* Si planeas escalar o migrar a PostgreSQL en el futuro, considera usar UUID como PK en un entorno desacoplado.
-* Agrega control de versiones de esquema (ej: con TypeORM migrations o herramientas como Liquibase/Flyway).
-
----
-
-¿Quieres que lo exporte como archivo `.md` o `.pdf`? ¿O necesitas que genere el diagrama entidad-relación (ERD) a partir de este esquema?
