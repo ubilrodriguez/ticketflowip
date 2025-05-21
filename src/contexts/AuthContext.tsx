@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-// Definir la URL base de la API actualizada al puerto correcto
+// Definir  la URL AuthContxt.tsx base de la API actualizada al puerto correcto
 const API_URL = 'http://localhost:3000/api';
 
 interface User {
