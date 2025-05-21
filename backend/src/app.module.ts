@@ -3,12 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AuthModule } from './auth/auth.module';
-// import { UsuariosModule } from './usuarios/usuarios.module';
-  import { UsuariosModule } from './usuarios/module/usuarios.module';
-// import { TicketsModule } from './tickets/tickets.module';
-// import { ComentariosModule } from './comentarios/comentarios.module';
-// import { NotificacionesModule } from './notificaciones/notificaciones.module';
-// import { DashboardModule } from './dashboard/dashboard.module';
+import { UsuariosModule } from './usuarios/module/usuarios.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -25,9 +21,7 @@ import { AuthModule } from './auth/auth.module';
         password: configService.get('DB_PASSWORD', ''),
         database: configService.get('DB_DATABASE', 'TicketFlowIP'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        // Setting synchronize to false to prevent table creation conflicts
         synchronize: false,
-        // Optionally enable lnogging to see more detailed SQL output
         logging: configService.get('DB_LOGGING', true),
         namingStrategy: new SnakeNamingStrategy(),
       }),
@@ -35,10 +29,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     AuthModule,
     UsuariosModule,
-    // TicketsModule,
-    // ComentariosModule,
-    // NotificacionesModule,
-    // DashboardModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [],
